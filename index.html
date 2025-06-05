@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моделювання коливання математичного маятника</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 20px;
+			background-color: #f5f5f5;
+		}
+
+		h1, h2 {
+					color: #2c3e50;
+					text-align: center;
+				}
+				
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 15px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+			color: black;
+        }
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+		.experiment-info {
+			background-color: #fff;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+			margin-bottom: 20px;
+		}
+				
+		.experiment-steps1, .experiment-steps2,.experiment-steps3  {
+			background-color: #f9f9f9;
+			padding: 15px;
+			border-left: 4px solid #3498db;
+			margin-bottom: 20px;
+			position: relative;
+			float:left;
+		}
+				
+		.canvas-container {
+			width: 400px;
+			height: 450px;
+			background-color: lightgray;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+			
+		}
+
+		canvas {
+			display: block;
+		}
+		
+		.controls {
+			display: flex;			
+			flex-direction: column;
+			gap: 10px;
+			justify-content: space-between;
+			background-color: white;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			width: 300px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+
+		input[type="range"] {
+			width: 100%;
+			margin-bottom: 5px;
+		}
+
+		.value-display {
+			text-align: right;
+			font-size: 14px;
+			color: #666;
+		}		
+
+		.button-group {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			text-align:center;
+		}
+		
+		.my-controls{
+			display: flex;
+			flex-direction: row;
+			gap: 5px;
+			justify-content: space-between;
+		}
+		
+        .oscillation-counter {
+			margin: 20px;
+            font-size: 20px;
+        }
+		
+		table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+		
+		.table-container {
+            margin-top: 20px;
+            width: 50%;
+        }
+		
+		.sec-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+			width: 300px;
+        }
+        
+        .stopwatch {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: #f9f9f9;
+            border: 10px solid #333;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .center-dot {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background-color: #d32f2f;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+        
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: 50% 100%;
+            border-radius: 5px;
+        }
+        
+        .seconds-hand {
+            height: 120px;
+            width: 2px;
+            background-color: #d32f2f;
+            transform: translateX(-50%) rotate(0deg);
+            z-index: 3;
+        }
+        
+        .minutes-hand {
+            height: 100px;
+            width: 4px;
+            background-color: #333;
+            transform: translateX(-50%) rotate(0deg);
+            z-index: 2;
+        }
+        
+        .milliseconds-hand {
+            height: 70px;
+            width: 1px;
+            background-color: #1976D2;
+            transform: translateX(-50%) rotate(0deg);
+            z-index: 1;
+        }
+        
+        .marker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .marker div {
+            position: absolute;
+            width: 2px;
+            height: 10px;
+            background-color: #333;
+            top: 10px;
+            left: 50%;
+            transform-origin: 50% 140px;
+        }
+        
+        .marker div:nth-child(5n+1) {
+            height: 15px;
+            width: 3px;
+            top: 5px;
+        }
+        
+        .digital-display {
+            font-size: 24px;
+            font-family: monospace;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+		button {
+			font-size: 18px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			padding: 5px 5px;
+			border-radius: 5px;
+			cursor: pointer;
+			font-size: 16px;
+			margin-right: 10px;
+			margin-top:5px;
+			transition: background-color 0.3s;
+		}
+        
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+        
+        #stopBtn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        #stopBtn:hover {
+            background-color: #d32f2f;
+        }
+        
+        #resetBtn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        #resetBtn:hover {
+            background-color: #1976D2;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+		
+		.atention{
+			color: red;
+		}
+	</style>
+</head>
+<body>
+	<h1>Лабораторна робота № 3</h1>
+    <h2>Тема. Дослідження  коливань  нитяного  маятника</h2>
+	
+	<div class="tabs">
+        <button class="tab active" id="experiment1">1: Залежність від амплітуди</button>
+        <button class="tab" id="experiment2">2: Залежність від маси</button>
+        <button class="tab" id="experiment3">3: Залежність від довжини</button>
+    </div>
+	
+	<div class="experiment-info">
+        <p><strong>Мета:</strong> переконатися на досліді, що період коливань нитяного маятника не залежить від маси тягарця й амплітуди коливань, проте залежить від довжини нитки.</p>
+        <p><strong>Обладнання:</strong> дві невеличкі важкі кульки різних мас; дві міцні нерозтяжні нитки завдовжки 1,1 м; лінійка (мірна стрічка); штатив із муфтою та кільцем; секундомір.</p>
+    </div>
+    <div class="experiment-steps1">
+        <p><strong>Хід експерименту 1: Залежність від амплітуди</strong></p>
+        <ol type="I">
+            <li>Установіть на краю стола штатив. Біля його верхнього кінця закріпіть кільце й підвісьте до нього на нитці кульку.</li>
+			<li><b>Дослідіть залежність періоду коливань маятника від його амплітуди.</b></li>
+			<ol>
+				<li><span class="atention">Зверніть увагу: довжини маятників мають бути однаковими.</span></li>
+				<li>Відхиливши маятник на відстань 2–3 см від положення рівноваги та відпустивши, виміряйте час, за який маятник виконає 20 коливань. Визначте період коливань.</li>
+				<li>Повторіть дослід, збільшивши амплітуду коливань.
+				<li>Результати вимірювань і обчислень занесіть до табл. 1.</li>
+			</ol>
+        </ol>
+    </div>
+	
+	<div class="experiment-steps2">
+        <p><strong>Хід експерименту 2: Залежність від маси</strong></p>
+        <ol type="I">
+            <li>Установіть на краю стола штатив. Біля його верхнього кінця закріпіть кільце й підвісьте до нього на нитці кульку.</li>
+			<li><b>Дослідіть залежність періоду коливань маятника від його маси.</b></li>
+			<ol>
+				<li><span class="atention">Зверніть увагу: довжини маятників мають бути однаковими.</span></li>
+				<li>Встановіть початкову масу кульки. Відхиливши маятник положення рівноваги та відпустивши, виміряйте час, за який маятник виконає 20 коливань. Визначте період коливань.</li>
+				<li>Повторіть дослід, з більшою або меншою масою кульки.
+				<li>Результати вимірювань і обчислень занесіть до табл. 2.</li>
+			</ol>
+        </ol>
+    </div>
+	
+	<div class="experiment-steps3">
+        <p><strong>Хід експерименту 3: Залежність від довжини</strong></p>
+        <ol type="I">
+            <li>Установіть на краю стола штатив. Біля його верхнього кінця закріпіть кільце й підвісьте до нього на нитці кульку.</li>
+			<li><b>Дослідіть залежність періоду коливань маятника від його довжини.</b></li>
+			<ol>
+				<li>Встановіть початкову довжину маятника. Відхиливши маятник від положення рівноваги та відпустивши, виміряйте час, за який маятник виконає 20 коливань. Визначте період коливань.</li>
+				<li>Повторіть дослід, з більшою або меншою довжиною маятника.
+				<li>Результати вимірювань і обчислень занесіть до табл. 3.</li>
+			</ol>
+        </ol>
+    </div>
+	
+	<div class="my-controls">	
+		<div class="sec-container">        
+			<div class="stopwatch">
+				<div class="marker" id="markers"></div>
+				<div class="hand milliseconds-hand" id="msHand"></div>
+				<div class="hand seconds-hand" id="secHand"></div>
+				<div class="hand minutes-hand" id="minHand"></div>
+				<div class="center-dot"></div>
+			</div>
+			
+			<div class="digital-display" id="display">00:00.000</div>
+		</div>
+		
+		<div class="canvas-container">
+			<canvas id="pendulumCanvas" width="400" height="400"></canvas>	
+			<div class="oscillation-counter" id="oscillation-counter2">Коливань: 0</div>			
+		</div>
+		
+		<div class="controls">
+			<div class="control-group">
+				<label for="initialAngle">Амплітуда: <span class="value-display"><span id="angleValue">3</span> см</span></label>
+				<input type="range" id="initialAngle" min="0" max="10" step="1" value="0">            
+			</div>
+			
+			<div class="control-group">
+				<label for="mass">Маса: <span class="value-display"><span id="massValue">200</span> г</span></label>
+				<input type="range" id="mass" min="100" max="300" step="50" value="200">            
+			</div>
+			
+			<div class="control-group">
+				<label for="length">Довжина маятника: <span class="value-display"><span id="lengthValue">1</span> м</span></label>	
+				<input type="range" id="length" min="0.1" max="1" step="0.1" value="1">            
+			</div>
+			
+			<div class="control-group">
+				<label for="gravity">Прискорення<br>вільного падіння: <span class="value-display"><span id="gravityValue">9.8</span> м/с²</span></label>
+				<input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">            
+			</div>
+			
+			<div class="control-group">
+				<label for="damping">Коефіцієнт затухання: <span class="value-display"><span id="dampingValue">0</span></span></label>
+				<input type="range" id="damping" min="0" max="0.5" step="0.01" value="0">            
+			</div>
+			<div class="button-group">
+				<div>
+					<button id="startBtn">Старт</button>
+					<button id="stopBtn">Стоп</button>
+					<button id="resetBtn">Скинути</button>
+				</div>	
+				<button id="traceBtn">Траєкторія: Вимк</button>
+			</div>			
+		</div> 
+	</div>
+	
+	<div class="table-container" id="table1">
+			<h3>Таблиця 1: Залежність періоду коливань маятника від його амплітуди</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>№ досліду</th>
+						<th>Довжина нитки<br>L, м</th>
+						<th>Амплітуда коливань<br>А, м</th>
+						<th>Число коливань<br>N</th>
+						<th>Час коливань<br>t, с</th>
+						<th>Період коливань<br>T, с</th>
+					</tr>
+				</thead>
+				<tbody id="results-table1"> </tbody>
+			</table>
+    </div>
+	
+	<div class="table-container" id="table2">
+			<h3>Таблиця 2: Залежність періоду коливань маятника його маси</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>№ досліду</th>
+						<th>Довжина нитки<br>L, м</th>
+						<th>Маса кульки<br>m, кг</th>
+						<th>Число коливань<br>N</th>
+						<th>Час коливань<br>t, с</th>
+						<th>Період коливань<br>T, с</th>
+					</tr>
+				</thead>
+				<tbody id="results-table2"> </tbody>
+			</table>
+    </div>
+	
+	<div class="table-container" id="table3">
+			<h3>Таблиця 3: Залежність періоду коливань маятника від його довжини</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>№ досліду</th>
+						<th>Довжина нитки<br>L, м</th>
+						<th>Число коливань<br>N</th>
+						<th>Час коливань<br>t, с</th>
+						<th>Період коливань<br>T, с</th>
+					</tr>
+				</thead>
+				<tbody id="results-table3"> </tbody>
+			</table>
+    </div>
+	
+		
+		
+    <script>
+		// Отримання елементів DOM ходу експерименту
+		const experimentSteps1 = document.querySelector(".experiment-steps1");
+		const experimentSteps2 = document.querySelector(".experiment-steps2");
+		const experimentSteps3 = document.querySelector(".experiment-steps3");
+		
+		// Отримання елементів DOM дослідів
+		const experiment1 = document.getElementById("experiment1");
+		const experiment2 = document.getElementById("experiment2");
+		const experiment3 = document.getElementById("experiment3");
+		
+		// Отримання елементів DOM секундоміра
+        const secHand = document.getElementById('secHand');
+        const minHand = document.getElementById('minHand');
+        const msHand = document.getElementById('msHand');
+        const markers = document.getElementById('markers');
+        const display = document.getElementById('display');
+		
+		// Отримання елементів DOM лічильника коливань
+        const oscillationCounter = document.getElementById('oscillation-counter2');
+		
+		// Змінна для лічильника коливань
+		let oscillationNumber = 0;
+		
+		// Отримання елементів DOM
+		const canvas = document.getElementById('pendulumCanvas');
+		const ctx = canvas.getContext('2d');
+
+		// Елементи керування
+		const lengthSlider = document.getElementById('length');
+		const gravitySlider = document.getElementById('gravity');
+		const angleSlider = document.getElementById('initialAngle');
+		const massSlider = document.getElementById('mass');
+		const dampingSlider = document.getElementById('damping');
+		const startBtn = document.getElementById('startBtn');
+		const stopBtn = document.getElementById('stopBtn');
+		const resetBtn = document.getElementById('resetBtn');
+		const traceBtn = document.getElementById('traceBtn');
+
+		// Елементи відображення значень
+		const lengthValue = document.getElementById('lengthValue');
+		const gravityValue = document.getElementById('gravityValue');
+		const angleValue = document.getElementById('angleValue');
+		const massValue = document.getElementById('massValue');
+		const dampingValue = document.getElementById('dampingValue');
+		
+		const lengthElement = document.getElementById('length');
+		const gravityElement = document.getElementById('gravity');
+		const dampingElement = document.getElementById('damping');
+		const massElement = document.getElementById('mass');
+		const initialAngelElement = document.getElementById('initialAngel');
+		const resultsTable1 =  document.getElementById('results-table1');
+		const resultsTable2 =  document.getElementById('results-table2');
+		const resultsTable3 =  document.getElementById('results-table3');
+		const table1 = document.getElementById('table1');
+		const table2 = document.getElementById('table2');
+		const table3 = document.getElementById('table3');
+		
+		//lengthElement.setAttribute("disabled","");
+		//gravityElement.setAttribute("disabled","");
+		gravityElement.style.display = "none";
+		//dampingElement.setAttribute("disabled","");
+		dampingElement.style.display = "none";
+		//massElement.setAttribute("disabled","");
+		experimentSteps1.style.display = "block";
+		experimentSteps2.style.display = "none";
+		experimentSteps3.style.display = "none";
+		table2.style.display = "none";
+		table3.style.display = "none";
+		
+		// Параметри маятника
+		let length = 1; // довжина маятника (м)
+		let gravity = 9.8;// прискорення вільного падіння (м/с²)
+		let angle = Math.asin(3/(length * 100));// початковий кут (радіани)
+		let angularVelocity = 0;// початкова кутова швидкість (рад/с)
+		let damping = 0; // коефіцієнт затухання
+		let mass = 300; // масса кульки (г)
+
+		// Центр маятника
+		const pivotX = canvas.width / 2;
+		const pivotY = 50;
+
+		// Масштабування для відображення
+		const scale = 300;// пікселів на метр
+
+		// Змінні для анімації
+		let animationId = null;
+		let lastTime = 0;
+		let isRunning = false;
+		let showTrace = false;
+		
+		// Змінні для роботи секундоміра
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isRunningSec = false;
+		
+		// Номер експерименту
+		let noTasck = 1;
+		let noExperiment1 = 0;
+		let noExperiment2 = 0;
+		let noExperiment3 = 0;
+		
+		//Функція експерименту №1
+		function startExperiment1(){
+			noTasck = 1;
+			experiment1.style.background = "#3498db";
+            experiment1.style.color = "white";
+			experiment2.style.background = "#F0F0F0";
+            experiment2.style.color = "black";
+			experiment3.style.background = "#F0F0F0";
+            experiment3.style.color = "black";
+			//massSlider.setAttribute("disabled", "");
+			//lengthSlider.setAttribute("disabled", "");
+			//angleSlider.removeAttribute("disabled");
+			table1.style.display = "block";
+			table2.style.display = "none";
+			table3.style.display = "none";
+			experimentSteps1.style.display = "block";
+			experimentSteps2.style.display = "none";
+			experimentSteps3.style.display = "none";
+		}
+		
+		//Функція експерименту №2
+		function startExperiment2(){	
+			noTasck = 2;		
+			experiment1.style.background = "#F0F0F0";
+            experiment1.style.color = "black";
+			experiment2.style.background = "#3498db";
+            experiment2.style.color = "white";
+			experiment3.style.background = "#F0F0F0";
+            experiment3.style.color = "black";
+			//angleSlider.setAttribute("disabled", "");
+			//lengthSlider.setAttribute("disabled", "");
+			//massSlider.removeAttribute("disabled");
+			table1.style.display = "none";
+			table2.style.display = "block";
+			table3.style.display = "none";
+			experimentSteps1.style.display = "none";
+			experimentSteps2.style.display = "block";
+			experimentSteps3.style.display = "none";
+		}
+		
+		//Функція експерименту №3
+		function startExperiment3(){
+			noTasck = 3;
+			experiment1.style.background = "#F0F0F0";
+            experiment1.style.color = "black";
+			experiment2.style.background = "#F0F0F0";
+            experiment2.style.color = "black";
+			experiment3.style.background = "#3498db";
+            experiment3.style.color = "white";
+			//massSlider.setAttribute("disabled", "");
+			//angleSlider.setAttribute("disabled", "");
+			//lengthSlider.removeAttribute("disabled");
+			table1.style.display = "none";
+			table2.style.display = "none";
+			table3.style.display = "block";
+			experimentSteps1.style.display = "none";
+			experimentSteps2.style.display = "none";
+			experimentSteps3.style.display = "block";
+		}
+
+		// Масив для зберігання точок траєкторії
+		let tracePoints = [];
+
+		// Функція для оновлення позиції маятника
+		function updatePendulum(deltaTime) {
+			// Рівняння руху математичного маятника
+			const angularAcceleration = -gravity / length * Math.sin(angle) - damping * angularVelocity;
+
+			// Інтегрування для отримання нової швидкості та положення
+			angularVelocity += angularAcceleration * deltaTime;
+			let angleOld = angle;
+			angle += angularVelocity * deltaTime;
+			if(angleOld > 0 && angle < 0){
+				oscillationNumber += 1;
+				oscillationCounter.textContent = "Коливань: " + oscillationNumber;
+			}
+
+			// Розрахунок координат кінця маятника
+			const x = pivotX + Math.sin(angle) * length * scale;
+			const y = pivotY + Math.cos(angle) * length * scale;
+
+			// Додавання точки до траєкторії, якщо увімкнено
+			if (showTrace) {
+				tracePoints.push({ x, y });
+				// Обмеження кількості точок для продуктивності
+				if (tracePoints.length > 1000) {
+					tracePoints.shift();
+				}
+			}
+
+			return { x, y };
+		}
+
+		// Функція для малювання маятника
+		function drawPendulum(position) {
+			// Очистка полотна
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			// Малювання опори
+			ctx.beginPath();
+			ctx.arc(pivotX, pivotY, 5, 0, Math.PI * 2);
+			ctx.fillStyle = "#333";
+			ctx.fill();
+
+			// Малювання стрижня маятника
+			ctx.beginPath();
+			ctx.moveTo(pivotX, pivotY);
+			ctx.lineTo(position.x, position.y);
+			ctx.strokeStyle = "#333";
+			ctx.lineWidth = 2;
+			ctx.stroke();
+
+			// Малювання вантажу маятника
+			ctx.beginPath();
+			ctx.arc(position.x, position.y, 15, 0, Math.PI * 2);
+			ctx.fillStyle = "#4CAF50";
+			ctx.fill();
+			ctx.strokeStyle = "#333";
+			ctx.lineWidth = 1;
+			ctx.stroke();
+
+			// Малювання траєкторії, якщо увімкнено
+			if (showTrace && tracePoints.length > 1) {
+				ctx.beginPath();
+				ctx.moveTo(tracePoints[0].x, tracePoints[0].y);
+
+				for (let i = 1; i < tracePoints.length; i++) {
+					ctx.lineTo(tracePoints[i].x, tracePoints[i].y);
+				}
+
+				ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+				ctx.lineWidth = 1;
+				ctx.stroke();
+			}
+		}
+
+		// Функція анімації
+		function animate(currentTime) {
+			if (!lastTime) lastTime = currentTime;
+			const deltaTime = (currentTime - lastTime) / 1000; // у секундах
+			lastTime = currentTime;
+
+			// Оновлення позиції маятника
+			const position = updatePendulum(deltaTime);
+
+			// Малювання маятника
+			drawPendulum(position);
+
+			// Продовження анімації
+			if (isRunning) {
+				animationId = requestAnimationFrame(animate);
+			}
+		}
+
+		// Функція для запуску анімації
+		function startAnimation() {
+			startTimer()
+			if (!isRunning) {
+				isRunning = true;
+				lastTime = 0;
+				animationId = requestAnimationFrame(animate);
+				startBtn.disabled = true;
+				resetBtn.disabled = true;
+				stopBtn.disabled = false;
+			}
+		}
+		
+		// Рядок таблиці результатів
+		let millisecondsResult = 0;
+        let secondsResult = 0;
+        let minutesResult = 0;
+		let dataRow = [];
+		function drawRow(){
+			let dr = document.createElement("tr");
+			let timeResult = minutesResult * 60 + secondsResult + millisecondsResult / 1000;
+			let period = timeResult / oscillationNumber;
+			if(noTasck == 1){
+				noExperiment1++;
+				dataRow = [noExperiment1, length, (parseFloat(angleSlider.value) * 0.01).toFixed(2), oscillationNumber, timeResult.toFixed(3), period.toFixed(3)];
+				resultsTable = resultsTable1;
+				for(let i = 0; i < 6; i++){
+					let ds = document.createElement("td");
+					ds.textContent = dataRow[i];
+					dr.appendChild(ds);
+				}	
+			}
+			if(noTasck == 2){
+				noExperiment2++;
+				dataRow = [noExperiment2, length, (parseFloat(massSlider.value) * 0.001).toFixed(2), oscillationNumber, timeResult.toFixed(3), period.toFixed(3)];
+				resultsTable = resultsTable2;
+				for(let i = 0; i < 6; i++){
+					let ds = document.createElement("td");
+					ds.textContent = dataRow[i];
+					dr.appendChild(ds);
+				}
+			}	
+			if(noTasck == 3){
+				noExperiment3++;
+				dataRow = [noExperiment3, length, oscillationNumber, timeResult.toFixed(3), period.toFixed(3)];
+				resultsTable = resultsTable3;
+				for(let i = 0; i < 5; i++){
+					let ds = document.createElement("td");
+					ds.textContent = dataRow[i];
+					dr.appendChild(ds);
+				}
+			}				
+			resultsTable.appendChild(dr);
+		}
+
+		// Функція для зупинки анімації
+		function stopAnimation() {
+			stopTimer()
+			if (isRunning) {
+				isRunning = false;
+				cancelAnimationFrame(animationId);
+				startBtn.disabled = true;
+				stopBtn.disabled = true;
+				resetBtn.disabled = false;
+				drawRow();
+			}			
+		}
+
+		// Функція для скидання параметрів
+		function resetPendulum() {
+			oscillationNumber = 0;
+			oscillationCounter.textContent = "Число коливань: " + oscillationNumber;
+			resetTimer();
+			stopAnimation();
+
+			// Скидання до значень за замовчуванням
+			//lengthSlider.value = "1";
+			//gravitySlider.value = "9.8";
+			//angleSlider.value = "3";
+			//dampingSlider.value = "0";
+			//massSlider.value = "200";
+
+			// Оновлення відображення значень
+			updateValues();
+
+			// Скидання параметрів маятника
+			length = lengthSlider.value;
+			gravity = gravitySlider.value;
+			angle = Math.asin(parseFloat(angleSlider.value)/(length * 100));
+			angularVelocity = 0;
+			damping = 0;
+
+			// Очищення траєкторії
+			tracePoints = [];
+
+			// Малювання початкового положення
+			const x = pivotX + Math.sin(angle) * length * scale;
+			const y = pivotY + Math.cos(angle) * length * scale;
+			drawPendulum({ x, y });
+			startBtn.disabled = false;
+		}
+
+		// Функція для переключення відображення траєкторії
+		function toggleTrace() {
+			showTrace = !showTrace;
+			traceBtn.textContent = showTrace ? "Траєкторія: Увімк" : "Траєкторія: Вимк";
+
+			// Очищення попередньої траєкторії
+			if (!showTrace) {
+				tracePoints = [];
+			}
+		}
+
+		// Функція для оновлення відображення значень
+		function updateValues() {
+			lengthValue.textContent = lengthSlider.value;
+			gravityValue.textContent = gravitySlider.value;
+			angleValue.textContent = angleSlider.value;
+			massValue.textContent = massSlider.value;
+			dampingValue.textContent = dampingSlider.value;
+
+			// Оновлення параметрів маятника
+			length = parseFloat(lengthSlider.value);
+			gravity = parseFloat(gravitySlider.value);
+			angle = Math.asin(parseFloat(angleSlider.value)/(length * 100));
+			damping = parseFloat(dampingSlider.value);
+
+			// Якщо анімація не запущена, намалювати маятник у новому положенні
+			if (!isRunning) {
+				const x = pivotX + Math.sin(angle) * length * scale;
+				const y = pivotY + Math.cos(angle) * length * scale;
+				drawPendulum({ x, y });
+			}
+
+			// Очищення траєкторії при зміні параметрів
+			tracePoints = [];
+		}
+
+		
+		
+		// Ініціалізація
+		stopBtn.disabled = true;
+		resetPendulum();	
+		
+		
+        
+        // Створення маркерів часу
+        for (let i = 0; i < 60; i++) {
+            const marker = document.createElement('div');
+            marker.style.transform = `rotate(${i * 6}deg)`;
+            markers.appendChild(marker);
+        }
+        
+        
+        
+        // Функція для форматування часу у вигляді MM:SS.MMM
+        function formatTime(ms) {
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+			minutesResult = minutes;
+			secondsResult = seconds;
+			millisecondsResult = milliseconds; 			
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        }
+        
+        // Функція для оновлення стрілок та дисплея
+        function updateDisplay() {
+            const currentTime = Date.now();
+            const timeToShow = elapsedTime + (currentTime - startTime);
+            
+            // Оновлення цифрового дисплея
+            display.textContent = formatTime(timeToShow);
+            
+            // Розрахунок кутів для стрілок
+            const milliseconds = timeToShow % 1000;
+            const seconds = Math.floor((timeToShow / 1000) % 60);
+            const minutes = Math.floor((timeToShow / 60000) % 60);
+            
+            // Оновлення положення стрілок
+            const msAngle = milliseconds * 0.36; // 360 / 1000
+            const secAngle = seconds * 6 + milliseconds * 0.006; // 360 / 60 + точніше позиціонування
+            const minAngle = minutes * 6 + seconds * 0.1; // 360 / 60 + точніше позиціонування
+            
+            msHand.style.transform = `translateX(-50%) rotate(${msAngle}deg)`;
+            secHand.style.transform = `translateX(-50%) rotate(${secAngle}deg)`;
+            minHand.style.transform = `translateX(-50%) rotate(${minAngle}deg)`;
+        }
+        
+        // Функція для запуску секундоміра
+        function startTimer() {
+            if (!isRunningSec) {
+                isRunningSec = true;
+                startTime = Date.now();
+                timerInterval = setInterval(updateDisplay, 10); // Оновлення кожні 10 мс для плавності
+            }
+        }
+        
+        // Функція для зупинки секундоміра
+        function stopTimer() {
+            if (isRunningSec) {
+                isRunningSec = false;
+                clearInterval(timerInterval);
+                
+                // Зберігаємо загальний час
+                elapsedTime += Date.now() - startTime;
+            }
+        }
+        
+        // Функція для скидання секундоміра
+        function resetTimer() {
+            stopTimer();
+            elapsedTime = 0;
+            display.textContent = formatTime(0);
+            
+            // Скидання стрілок
+            msHand.style.transform = `translateX(-50%) rotate(0deg)`;
+            secHand.style.transform = `translateX(-50%) rotate(0deg)`;
+            minHand.style.transform = `translateX(-50%) rotate(0deg)`;
+        }
+        
+        // Ініціалізація секундоміра
+        resetTimer();
+		
+		// Обробники подій
+		experiment1.addEventListener('click', startExperiment1);
+		experiment2.addEventListener('click', startExperiment2);
+		experiment3.addEventListener('click', startExperiment3);
+		
+		startBtn.addEventListener('click', startAnimation);
+		stopBtn.addEventListener('click', stopAnimation);
+		resetBtn.addEventListener('click', resetPendulum);
+		traceBtn.addEventListener('click', toggleTrace);
+
+		lengthSlider.addEventListener('input', updateValues);
+		gravitySlider.addEventListener('input', updateValues);
+		angleSlider.addEventListener('input', updateValues);
+		dampingSlider.addEventListener('input', updateValues);
+		massSlider.addEventListener('input', updateValues);
+	</script>
+</body>
+</html>
